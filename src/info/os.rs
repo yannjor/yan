@@ -4,6 +4,7 @@ use std::env;
 use std::fs::read_to_string;
 
 const OS_RELEASE_PATH: &str = "/etc/os-release";
+const OS_KERNEL_PATH: &str = "/proc/sys/kernel/osrelease";
 
 /// Parses the contents of /etc/os-release into a HashMap.
 fn parse_os_release(contents: &str) -> Option<HashMap<String, String>> {
@@ -32,6 +33,16 @@ pub fn get_os() -> Option<String> {
 
 pub fn get_cpu_architechture() -> Option<String> {
     Some(format!("Arch: {}", env::consts::ARCH))
+}
+
+pub fn get_kernel() -> Option<String> {
+    match read_to_string(OS_KERNEL_PATH) {
+        Ok(kernel) => Some(format!("Kernel: {}", kernel.trim())),
+        Err(e) => {
+            eprintln!("Failed to read kernel version, {}", e);
+            None
+        }
+    }
 }
 
 #[cfg(test)]

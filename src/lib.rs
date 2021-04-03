@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
-/// Parses a string containing key - value pairs into a HashMap.
+/// Parses a string containing key - value pairs into a HashMap. Used to parse
+/// contents of different files containing system information.
 pub fn parse_string_to_hashmap(string: &str, delimiter: char) -> Option<HashMap<String, String>> {
     let mut map = HashMap::new();
     for line in string.lines() {
