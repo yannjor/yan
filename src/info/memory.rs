@@ -1,4 +1,4 @@
-use minifetch::parse_string_to_hashmap;
+use yan::parse_string_to_hashmap;
 use std::collections::HashMap;
 use std::fs::read_to_string;
 

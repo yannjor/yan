@@ -1,3 +1,4 @@
-# Minifetch
+# Yan
 
-Simple system-information fetching utility. Made as a project to practice Rust.
+'Yet Another Neofetch' - Simple system-information fetching utility. Made as a
+project to practice Rust.
