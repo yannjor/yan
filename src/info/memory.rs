@@ -1,4 +1,3 @@
-use yan::parse_string_to_hashmap;
 use std::collections::HashMap;
 use std::fs::read_to_string;
 
@@ -17,12 +16,15 @@ fn parse_mem_value(value: &str) -> u32 {
 
 /// Parses the contents of /proc/meminfo into a HashMap.
 fn parse_proc_meminfo(contents: &str) -> Option<HashMap<String, u32>> {
-    let meminfo_map = parse_string_to_hashmap(contents, ':')?;
-    let mut new_map = HashMap::new();
-    meminfo_map.iter().for_each(|(key, val)| {
-        new_map.insert(key.to_string(), parse_mem_value(val));
-    });
-    Some(new_map)
+    contents
+        .lines()
+        .map(|line| {
+            let split = line.split(':').collect::<Vec<_>>();
+            let key = split.get(0)?.to_string();
+            let val = parse_mem_value(split.get(1)?);
+            Some((key, val))
+        })
+        .collect()
 }
 
 pub fn get_memory_usage() -> Option<String> {

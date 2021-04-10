@@ -1,5 +1,3 @@
-use yan::parse_string_to_hashmap;
-
 use std::collections::HashMap;
 use std::env;
 use std::fs::read_to_string;
@@ -9,11 +7,15 @@ const OS_KERNEL_PATH: &str = "/proc/sys/kernel/osrelease";
 
 /// Parses the contents of /etc/os-release into a HashMap.
 fn parse_os_release(contents: &str) -> Option<HashMap<String, String>> {
-    let mut release_map: HashMap<String, String> = parse_string_to_hashmap(contents, '=')?;
-    for (_, val) in release_map.iter_mut() {
-        *val = val.trim_matches('"').to_string();
-    }
-    Some(release_map)
+    contents
+        .lines()
+        .map(|line| {
+            let split = line.split('=').collect::<Vec<_>>();
+            let key = split.get(0)?.to_string();
+            let val = split.get(1)?.trim_matches('"').to_string();
+            Some((key, val))
+        })
+        .collect()
 }
 
 pub fn get_os() -> Option<String> {
