@@ -27,20 +27,20 @@ pub fn get_os() -> Option<String> {
         }
     };
     let release_map = parse_os_release(&os_info)?;
-    let distro_name = release_map.get("NAME")?;
+    let distro_name = release_map.get("NAME")?.to_string();
     if let Some(version) = release_map.get("VERSION") {
         return Some(format!("OS: {} {}", distro_name, version));
     }
-    Some(format!("OS: {}", distro_name))
+    Some(distro_name)
 }
 
-pub fn get_cpu_architechture() -> Option<String> {
-    Some(format!("Arch: {}", env::consts::ARCH))
+pub fn get_os_architechture() -> Option<String> {
+    Some(env::consts::ARCH.to_string())
 }
 
 pub fn get_kernel() -> Option<String> {
     match read_to_string(OS_KERNEL_PATH) {
-        Ok(kernel) => Some(format!("Kernel: {}", kernel.trim())),
+        Ok(kernel) => Some(kernel.trim().to_string()),
         Err(e) => {
             eprintln!("Failed to read kernel version, {}", e);
             None

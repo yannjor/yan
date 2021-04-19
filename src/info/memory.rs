@@ -41,7 +41,7 @@ pub fn get_memory_usage() -> Option<String> {
     let mem_available = meminfo_map.get("MemAvailable")?;
 
     Some(format!(
-        "Memory: {}MiB / {}MiB",
+        "{}MiB / {}MiB",
         mem_total - mem_available,
         mem_total
     ))
