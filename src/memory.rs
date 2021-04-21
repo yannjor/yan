@@ -1,7 +1,16 @@
+use ansi_term::Color;
 use std::collections::HashMap;
 use std::fs::read_to_string;
 
+use crate::Module;
+
 const MEM_USAGE_PATH: &str = "/proc/meminfo";
+
+pub struct Memory {
+    header: String,
+    /// (Available, Total) in MiB
+    usage: Option<(u32, u32)>,
+}
 
 /// Parses a string value from /proc/meminfo into a u32 containing the size
 /// in MiB.
@@ -15,36 +24,57 @@ fn parse_mem_value(value: &str) -> u32 {
 }
 
 /// Parses the contents of /proc/meminfo into a HashMap.
-fn parse_proc_meminfo(contents: &str) -> Option<HashMap<String, u32>> {
+/// Content is in form:
+/// KEY:    VALUE KB
+fn parse(contents: &str) -> HashMap<String, u32> {
     contents
         .lines()
         .map(|line| {
             let split = line.split(':').collect::<Vec<_>>();
-            let key = split.get(0)?.to_string();
-            let val = parse_mem_value(split.get(1)?);
-            Some((key, val))
+            // Safe to unwrap, since data is almost guaranteed to be in a valid format.
+            let key = split.get(0).unwrap().to_string();
+            let val = parse_mem_value(split.get(1).unwrap());
+            (key, val)
         })
         .collect()
 }
 
-pub fn get_memory_usage() -> Option<String> {
-    let mem_info = match read_to_string(MEM_USAGE_PATH) {
-        Ok(info) => info,
+pub fn get_memory_usage() -> Option<(u32, u32)> {
+    let contents = match read_to_string(MEM_USAGE_PATH) {
+        Ok(c) => c,
         Err(e) => {
             eprintln!("Failed to read {}, {}", MEM_USAGE_PATH, e);
             return None;
         }
     };
 
-    let meminfo_map = parse_proc_meminfo(&mem_info)?;
-    let mem_total = meminfo_map.get("MemTotal")?;
-    let mem_available = meminfo_map.get("MemAvailable")?;
+    let meminfo_map = parse(&contents);
+    let mem_total = *meminfo_map.get("MemTotal")?;
+    let mem_available = *meminfo_map.get("MemAvailable")?;
 
-    Some(format!(
-        "{}MiB / {}MiB",
-        mem_total - mem_available,
-        mem_total
-    ))
+    Some((mem_total - mem_available, mem_total))
+}
+
+impl Memory {
+    pub fn get() -> Self {
+        Self {
+            header: String::from("Memory"),
+            usage: get_memory_usage(),
+        }
+    }
+}
+
+impl Module for Memory {
+    fn print(&self, color: Color) {
+        if let Some(u) = &self.usage {
+            println!(
+                "{}: {}MiB / {}MiB",
+                color.bold().paint(&self.header),
+                u.0,
+                u.1
+            );
+        }
+    }
 }
 
 #[cfg(test)]
@@ -106,7 +136,7 @@ DirectMap4k:      465568 kB
 DirectMap2M:     9965568 kB
 DirectMap1G:     6291456 kB
 ";
-        let meminfo_map = parse_proc_meminfo(input).unwrap();
+        let meminfo_map = parse(input);
         assert_eq!(meminfo_map.len(), 53);
         assert_eq!(meminfo_map.get("MemTotal"), Some(&15950));
         assert_eq!(meminfo_map.get("PageTables"), Some(&38));
