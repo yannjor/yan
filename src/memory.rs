@@ -2,25 +2,24 @@ use ansi_term::Color;
 use std::collections::HashMap;
 use std::fs::read_to_string;
 
+use crate::config::{Config, MemoryUnit};
+
 use crate::Module;
 
 const MEM_USAGE_PATH: &str = "/proc/meminfo";
 
 pub struct Memory {
     header: String,
-    /// (Available, Total) in MiB
-    usage: Option<(u32, u32)>,
+    usage: Option<String>,
 }
 
 /// Parses a string value from /proc/meminfo into a u32 containing the size
-/// in MiB.
+/// in KiB
 fn parse_mem_value(value: &str) -> u32 {
-    let kb_value = value
+    value
         .trim_matches(|c: char| c == 'k' || c == 'B' || c.is_whitespace())
         .parse::<u32>()
-        .unwrap_or(0);
-    let mb_value = kb_value / 1024;
-    mb_value
+        .unwrap_or(0)
 }
 
 /// Parses the contents of /proc/meminfo into a HashMap.
@@ -39,7 +38,7 @@ fn parse(contents: &str) -> HashMap<String, u32> {
         .collect()
 }
 
-pub fn get_memory_usage() -> Option<(u32, u32)> {
+pub fn get_memory_usage(config: &Config) -> Option<String> {
     let contents = match read_to_string(MEM_USAGE_PATH) {
         Ok(c) => c,
         Err(e) => {
@@ -51,15 +50,37 @@ pub fn get_memory_usage() -> Option<(u32, u32)> {
     let meminfo_map = parse(&contents);
     let mem_total = *meminfo_map.get("MemTotal")?;
     let mem_available = *meminfo_map.get("MemAvailable")?;
+    let mem_used = mem_total - mem_available;
 
-    Some((mem_total - mem_available, mem_total))
+    let mut usage = match config.mem_unit {
+        MemoryUnit::KiB => format!("{} KiB / {} KiB", mem_used, mem_total),
+        MemoryUnit::MiB => {
+            format!("{} MiB / {} MiB", mem_used / 1024, mem_total / 1024)
+        }
+        MemoryUnit::GiB => {
+            format!(
+                "{:.2} GiB / {:.2} GiB",
+                mem_used as f32 / 1048576.0,
+                mem_total as f32 / 1048576.0
+            )
+        }
+    };
+
+    if config.mem_percentage {
+        usage.push_str(&format!(
+            " ({:.0}%)",
+            (mem_used as f32 / mem_total as f32) * 100.0
+        ));
+    }
+
+    Some(usage)
 }
 
 impl Memory {
-    pub fn get() -> Self {
+    pub fn get(config: &Config) -> Self {
         Self {
             header: String::from("Memory"),
-            usage: get_memory_usage(),
+            usage: get_memory_usage(config),
         }
     }
 }
@@ -67,12 +88,7 @@ impl Memory {
 impl Module for Memory {
     fn print(&self, color: Color) {
         if let Some(u) = &self.usage {
-            println!(
-                "{}: {}MiB / {}MiB",
-                color.bold().paint(&self.header),
-                u.0,
-                u.1
-            );
+            println!("{}: {}", color.bold().paint(&self.header), u);
         }
     }
 }
@@ -81,7 +97,7 @@ impl Module for Memory {
 mod tests {
     use super::*;
     #[test]
-    fn test_parse_proc_meminfo() {
+    fn test_parse() {
         let input = "MemTotal:       16333740 kB
 MemFree:         8542972 kB
 MemAvailable:   11875280 kB
@@ -138,7 +154,7 @@ DirectMap1G:     6291456 kB
 ";
         let meminfo_map = parse(input);
         assert_eq!(meminfo_map.len(), 53);
-        assert_eq!(meminfo_map.get("MemTotal"), Some(&15950));
-        assert_eq!(meminfo_map.get("PageTables"), Some(&38));
+        assert_eq!(meminfo_map.get("MemTotal"), Some(&16333740));
+        assert_eq!(meminfo_map.get("PageTables"), Some(&39732));
     }
 }

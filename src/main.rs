@@ -1,9 +1,11 @@
+mod config;
 mod cpu;
 mod memory;
 mod os;
 mod shell;
 
 use ansi_term::Color;
+use config::Config;
 
 pub trait Module {
     fn print(&self, color: Color);
@@ -16,12 +18,20 @@ struct SystemInfo {
 
 impl SystemInfo {
     fn load() -> Self {
+        let config = match Config::load() {
+            Ok(c) => c,
+            Err(e) => {
+                eprintln!("Configuration error: {}", e);
+                std::process::exit(1)
+            }
+        };
+
         let modules: Vec<Box<dyn Module>> = vec![
             Box::new(os::Distro::get()),
             Box::new(os::Architechture::get()),
             Box::new(os::Kernel::get()),
-            Box::new(shell::Shell::get()),
-            Box::new(memory::Memory::get()),
+            Box::new(shell::Shell::get(&config)),
+            Box::new(memory::Memory::get(&config)),
             Box::new(cpu::Cpu::get()),
         ];
 
