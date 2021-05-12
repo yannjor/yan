@@ -19,12 +19,11 @@ fn get_shell(config: &Config) -> Option<String> {
         }
     };
 
-    if config.shell_path {
-        Some(shell)
-    } else {
+    if !config.shell_path {
         let shell_path = Path::new(&shell);
-        Some(String::from(shell_path.file_name()?.to_str()?))
+        return Some(String::from(shell_path.file_name()?.to_str()?));
     }
+    Some(shell)
 }
 
 impl Shell {

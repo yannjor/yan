@@ -1,24 +1,20 @@
-use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io::ErrorKind::NotFound;
 
+use serde::{Deserialize, Serialize};
+
+use crate::memory::MemoryUnit;
+
 const BINARY_NAME: &str = env!("CARGO_PKG_NAME");
 
-/// Unit used when outputting memory usage
 #[derive(Serialize, Deserialize)]
-pub enum MemoryUnit {
-    KiB,
-    MiB,
-    GiB,
-}
-
-#[derive(Serialize, Deserialize)]
+#[serde(default)]
 pub struct Config {
-    /// Unit used for memory usage
+    /// Unit used for memory usage. Possible values include KiB, MiB and GiB
     pub mem_unit: MemoryUnit,
-    /// Show memory usage percentage
+    /// Whether to show memory usage as percentage
     pub mem_percentage: bool,
-    /// Show full path for shell
+    /// Whether to show the full path of the shell
     pub shell_path: bool,
 }
 

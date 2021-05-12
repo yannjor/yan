@@ -1,16 +1,42 @@
-use ansi_term::Color;
 use std::collections::HashMap;
 use std::fs::read_to_string;
 
-use crate::config::{Config, MemoryUnit};
+use ansi_term::Color;
+use serde::{Deserialize, Serialize};
+
+use crate::config::Config;
 
 use crate::Module;
 
 const MEM_USAGE_PATH: &str = "/proc/meminfo";
 
+/// Conversion factor between Kibibyte and Mebibyte
+const MEBIBYTE: f32 = 1024.0;
+/// Conversion factor between Kibibyte and Gibibyte
+const GIBIBYTE: f32 = 1048576.0;
+
+/// Unit used when outputting memory usage
+#[derive(Serialize, Deserialize, Debug)]
+pub enum MemoryUnit {
+    KiB,
+    MiB,
+    GiB,
+}
+
+impl MemoryUnit {
+    /// Converts a KiB value to MiB or GiB and returns a string like: "15.55 GiB"
+    pub fn into_unit_str(&self, kib_value: u32) -> String {
+        match self {
+            Self::KiB => format!("{} KiB", kib_value),
+            Self::MiB => format!("{:.0} MiB", kib_value as f32 / MEBIBYTE),
+            Self::GiB => format!("{:.2} GiB", kib_value as f32 / GIBIBYTE),
+        }
+    }
+}
+
 pub struct Memory {
     header: String,
-    usage: Option<String>,
+    usage: String,
 }
 
 /// Parses a string value from /proc/meminfo into a u32 containing the size
@@ -38,42 +64,24 @@ fn parse(contents: &str) -> HashMap<String, u32> {
         .collect()
 }
 
-pub fn get_memory_usage(config: &Config) -> Option<String> {
-    let contents = match read_to_string(MEM_USAGE_PATH) {
-        Ok(c) => c,
-        Err(e) => {
-            eprintln!("Failed to read {}, {}", MEM_USAGE_PATH, e);
-            return None;
-        }
-    };
+pub fn get_memory_usage(config: &Config) -> String {
+    let contents = read_to_string(MEM_USAGE_PATH).expect("Failed to read /proc/meminfo");
 
-    let meminfo_map = parse(&contents);
-    let mem_total = *meminfo_map.get("MemTotal")?;
-    let mem_available = *meminfo_map.get("MemAvailable")?;
-    let mem_used = mem_total - mem_available;
+    let map = parse(&contents);
+    let total = *map.get("MemTotal").unwrap();
+    let available = *map.get("MemAvailable").unwrap();
+    let used = total - available;
 
-    let mut usage = match config.mem_unit {
-        MemoryUnit::KiB => format!("{} KiB / {} KiB", mem_used, mem_total),
-        MemoryUnit::MiB => {
-            format!("{} MiB / {} MiB", mem_used / 1024, mem_total / 1024)
-        }
-        MemoryUnit::GiB => {
-            format!(
-                "{:.2} GiB / {:.2} GiB",
-                mem_used as f32 / 1048576.0,
-                mem_total as f32 / 1048576.0
-            )
-        }
-    };
-
+    let mut usage = format!(
+        "{} / {}",
+        MemoryUnit::into_unit_str(&config.mem_unit, used),
+        MemoryUnit::into_unit_str(&config.mem_unit, total)
+    );
     if config.mem_percentage {
-        usage.push_str(&format!(
-            " ({:.0}%)",
-            (mem_used as f32 / mem_total as f32) * 100.0
-        ));
+        let used_percent = (used as f32 / total as f32) * 100.0;
+        usage.push_str(&format!(" ({:.0}%)", used_percent));
     }
-
-    Some(usage)
+    usage
 }
 
 impl Memory {
@@ -87,9 +95,7 @@ impl Memory {
 
 impl Module for Memory {
     fn print(&self, color: Color) {
-        if let Some(u) = &self.usage {
-            println!("{}: {}", color.bold().paint(&self.header), u);
-        }
+        println!("{}: {}", color.bold().paint(&self.header), self.usage);
     }
 }
 
