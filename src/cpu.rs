@@ -1,8 +1,7 @@
-use ansi_term::Color;
-
 use std::collections::HashMap;
 use std::fs::read_to_string;
 
+use crate::config::Config;
 use crate::Module;
 
 const CPU_INFO_PATH: &str = "/proc/cpuinfo";
@@ -40,9 +39,9 @@ pub fn get_cpu_model() -> Option<String> {
     Some(cpu_info.get("model name")?.to_string())
 }
 
-impl Cpu {
-    pub fn get() -> Self {
-        Cpu {
+impl Default for Cpu {
+    fn default() -> Self {
+        Self {
             header: String::from("CPU"),
             model: get_cpu_model(),
         }
@@ -50,9 +49,9 @@ impl Cpu {
 }
 
 impl Module for Cpu {
-    fn print(&self, color: Color) {
+    fn print(&self, config: &Config) {
         if let Some(m) = &self.model {
-            println!("{}: {}", color.bold().paint(&self.header), m);
+            println!("{}: {}", config.color.bold().paint(&self.header), m);
         }
     }
 }

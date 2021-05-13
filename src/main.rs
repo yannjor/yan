@@ -4,11 +4,10 @@ mod memory;
 mod os;
 mod shell;
 
-use ansi_term::Color;
 use config::Config;
 
 pub trait Module {
-    fn print(&self, color: Color);
+    fn print(&self, config: &Config);
 }
 
 /// Struct to store the detected system information.
@@ -18,30 +17,30 @@ struct SystemInfo {
 
 impl SystemInfo {
     fn load() -> Self {
-        let config = match Config::load() {
-            Ok(c) => c,
-            Err(e) => {
-                eprintln!("Configuration error: {}", e);
-                std::process::exit(1)
-            }
-        };
-
         let modules: Vec<Box<dyn Module>> = vec![
-            Box::new(os::Distro::get()),
-            Box::new(os::Architechture::get()),
-            Box::new(os::Kernel::get()),
-            Box::new(shell::Shell::get(&config)),
-            Box::new(memory::Memory::get(&config)),
-            Box::new(cpu::Cpu::get()),
+            Box::new(os::Distro::default()),
+            Box::new(os::Architechture::default()),
+            Box::new(os::Kernel::default()),
+            Box::new(shell::Shell::default()),
+            Box::new(memory::Memory::default()),
+            Box::new(cpu::Cpu::default()),
         ];
-
         SystemInfo { modules }
     }
 }
 
 fn main() {
+    let config = match Config::load() {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("Configuration error: {}", e);
+            std::process::exit(1)
+        }
+    };
+
     let sys_info = SystemInfo::load();
+
     for module in sys_info.modules.iter() {
-        module.print(Color::Cyan);
+        module.print(&config);
     }
 }

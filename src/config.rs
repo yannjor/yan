@@ -1,29 +1,32 @@
 use std::fs;
 use std::io::ErrorKind::NotFound;
 
+use ansi_term::Color;
 use serde::{Deserialize, Serialize};
 
-use crate::memory::MemoryUnit;
+use crate::memory::Memory;
+use crate::shell::Shell;
 
 const BINARY_NAME: &str = env!("CARGO_PKG_NAME");
 
 #[derive(Serialize, Deserialize)]
 #[serde(default)]
 pub struct Config {
-    /// Unit used for memory usage. Possible values include KiB, MiB and GiB
-    pub mem_unit: MemoryUnit,
-    /// Whether to show memory usage as percentage
-    pub mem_percentage: bool,
-    /// Whether to show the full path of the shell
-    pub shell_path: bool,
+    /// Accent color in output
+    #[serde(skip)]
+    pub color: Color,
+
+    pub memory: Memory,
+
+    pub shell: Shell,
 }
 
 impl Default for Config {
     fn default() -> Self {
         Self {
-            mem_unit: MemoryUnit::GiB,
-            mem_percentage: true,
-            shell_path: false,
+            color: Color::Cyan,
+            memory: Memory::default(),
+            shell: Shell::default(),
         }
     }
 }

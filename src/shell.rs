@@ -1,44 +1,55 @@
-use ansi_term::Color;
+use serde::{Deserialize, Serialize};
+
 use std::env;
 use std::path::Path;
 
 use crate::config::Config;
 use crate::Module;
 
+#[derive(Serialize, Deserialize)]
+#[serde(default)]
 pub struct Shell {
-    header: String,
+    #[serde(skip)]
     shell: Option<String>,
+
+    header: String,
+    /// Whether to show the full path of the shell
+    show_path: bool,
 }
 
-fn get_shell(config: &Config) -> Option<String> {
-    let shell = match env::var("SHELL") {
-        Ok(p) => p,
+fn get_shell() -> Option<String> {
+    match env::var("SHELL") {
+        Ok(s) => Some(s),
         Err(e) => {
             eprintln!("Failed to detect shell, {}", e);
-            return None;
+            None
         }
-    };
-
-    if !config.shell_path {
-        let shell_path = Path::new(&shell);
-        return Some(String::from(shell_path.file_name()?.to_str()?));
     }
-    Some(shell)
 }
 
-impl Shell {
-    pub fn get(config: &Config) -> Self {
-        Shell {
+impl Default for Shell {
+    fn default() -> Self {
+        Self {
+            shell: get_shell(),
             header: String::from("Shell"),
-            shell: get_shell(config),
+            show_path: false,
         }
     }
 }
 
 impl Module for Shell {
-    fn print(&self, color: Color) {
-        if let Some(s) = &self.shell {
-            println!("{}: {}", color.bold().paint(&self.header), s);
+    fn print(&self, config: &Config) {
+        if let Some(shell) = &self.shell {
+            let mut shell = shell.clone();
+            if !config.shell.show_path {
+                let path = Path::new(&shell);
+                shell = String::from(path.file_name().unwrap().to_str().unwrap());
+            }
+            println!(
+                "{}: {}",
+                config.color.bold().paint(&config.shell.header),
+                shell
+            );
         }
     }
 }
