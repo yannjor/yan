@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::memory::Memory;
 use crate::shell::Shell;
+use crate::uptime::Uptime;
 
 const BINARY_NAME: &str = env!("CARGO_PKG_NAME");
 
@@ -19,6 +20,8 @@ pub struct Config {
     pub memory: Memory,
 
     pub shell: Shell,
+
+    pub uptime: Uptime,
 }
 
 impl Default for Config {
@@ -27,6 +30,7 @@ impl Default for Config {
             color: Color::Cyan,
             memory: Memory::default(),
             shell: Shell::default(),
+            uptime: Uptime::default(),
         }
     }
 }
