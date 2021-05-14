@@ -1,9 +1,8 @@
-use ansi_term::Color;
-
 use std::collections::HashMap;
 use std::env::consts;
 use std::fs;
 
+use crate::config::Config;
 use crate::Module;
 
 const OS_RELEASE_PATH: &str = "/etc/os-release";
@@ -46,9 +45,9 @@ fn get_os_name() -> Option<String> {
     Some(distro_name)
 }
 
-impl Distro {
-    pub fn get() -> Self {
-        Distro {
+impl Default for Distro {
+    fn default() -> Self {
+        Self {
             header: String::from("OS"),
             name: get_os_name(),
         }
@@ -56,9 +55,9 @@ impl Distro {
 }
 
 impl Module for Distro {
-    fn print(&self, color: Color) {
+    fn print(&self, config: &Config) {
         if let Some(n) = &self.name {
-            println!("{}: {}", color.bold().paint(&self.header), n);
+            println!("{}: {}", config.color.bold().paint(&self.header), n);
         }
     }
 }
@@ -68,9 +67,9 @@ pub struct Architechture {
     architechture: String,
 }
 
-impl Architechture {
-    pub fn get() -> Self {
-        Architechture {
+impl Default for Architechture {
+    fn default() -> Self {
+        Self {
             header: String::from("Arch"),
             architechture: consts::ARCH.to_string(),
         }
@@ -78,10 +77,10 @@ impl Architechture {
 }
 
 impl Module for Architechture {
-    fn print(&self, color: Color) {
+    fn print(&self, config: &Config) {
         println!(
             "{}: {}",
-            color.bold().paint(&self.header),
+            config.color.bold().paint(&self.header),
             self.architechture
         );
     }
@@ -92,8 +91,8 @@ pub struct Kernel {
     version: Option<String>,
 }
 
-impl Kernel {
-    pub fn get() -> Self {
+impl Default for Kernel {
+    fn default() -> Self {
         let kernel = match fs::read_to_string(OS_KERNEL_PATH) {
             Ok(k) => Some(k.trim().to_string()),
             Err(e) => {
@@ -102,7 +101,7 @@ impl Kernel {
             }
         };
 
-        Kernel {
+        Self {
             header: String::from("Kernel"),
             version: kernel,
         }
@@ -110,9 +109,9 @@ impl Kernel {
 }
 
 impl Module for Kernel {
-    fn print(&self, color: Color) {
+    fn print(&self, config: &Config) {
         if let Some(v) = &self.version {
-            println!("{}: {}", color.bold().paint(&self.header), v);
+            println!("{}: {}", config.color.bold().paint(&self.header), v);
         }
     }
 }
