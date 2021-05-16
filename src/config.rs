@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::cpu::Cpu;
 use crate::memory::Memory;
+use crate::packages::Packages;
 use crate::shell::Shell;
 use crate::uptime::Uptime;
 
@@ -25,6 +26,8 @@ pub struct Config {
     pub uptime: Uptime,
 
     pub cpu: Cpu,
+
+    pub packages: Packages,
 }
 
 impl Default for Config {
@@ -35,6 +38,7 @@ impl Default for Config {
             shell: Shell::default(),
             uptime: Uptime::default(),
             cpu: Cpu::default(),
+            packages: Packages::default(),
         }
     }
 }

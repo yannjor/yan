@@ -5,7 +5,7 @@ project to practice Rust.
 
 Example output:
 
-![](https://i.imgur.com/b54UzFe.png)
+![](https://i.imgur.com/R7c6OoS.png)
 
 ## Config
 
