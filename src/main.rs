@@ -3,6 +3,7 @@ mod cpu;
 mod memory;
 mod os;
 mod shell;
+mod uptime;
 
 use config::Config;
 
@@ -21,6 +22,7 @@ impl SystemInfo {
             Box::new(os::Distro::default()),
             Box::new(os::Architechture::default()),
             Box::new(os::Kernel::default()),
+            Box::new(uptime::Uptime::default()),
             Box::new(shell::Shell::default()),
             Box::new(memory::Memory::default()),
             Box::new(cpu::Cpu::default()),
