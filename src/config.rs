@@ -4,6 +4,7 @@ use std::io::ErrorKind::NotFound;
 use ansi_term::Color;
 use serde::{Deserialize, Serialize};
 
+use crate::cpu::Cpu;
 use crate::memory::Memory;
 use crate::shell::Shell;
 use crate::uptime::Uptime;
@@ -22,6 +23,8 @@ pub struct Config {
     pub shell: Shell,
 
     pub uptime: Uptime,
+
+    pub cpu: Cpu,
 }
 
 impl Default for Config {
@@ -31,6 +34,7 @@ impl Default for Config {
             memory: Memory::default(),
             shell: Shell::default(),
             uptime: Uptime::default(),
+            cpu: Cpu::default(),
         }
     }
 }
