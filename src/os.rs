@@ -18,14 +18,14 @@ pub struct Distro {
 /// KEY="VALUE"
 /// ...
 /// into a HashMap.
-fn parse(contents: &str) -> HashMap<String, String> {
+fn parse(contents: &str) -> HashMap<&str, &str> {
     contents
         .lines()
         .map(|line| {
-            let split = line.split('=').collect::<Vec<_>>();
             // Safe to unwrap here as it's very unlikely this data is not in a valid format.
-            let key = split.get(0).unwrap().to_string();
-            let val = split.get(1).unwrap().trim_matches('"').to_string();
+            let split = line.split_once('=').unwrap();
+            let key = split.0;
+            let val = split.1.trim_matches('"');
             (key, val)
         })
         .collect()
@@ -133,7 +133,7 @@ BUG_REPORT_URL=\"https://bugs.archlinux.org/\"
 LOGO=archlinux
 ";
         let release_map = parse(input);
-        assert_eq!(release_map.get("NAME"), Some(&"Arch Linux".to_string()));
-        assert_eq!(release_map.get("BUILD_ID"), Some(&"rolling".to_string()));
+        assert_eq!(release_map.get("NAME"), Some(&"Arch Linux"));
+        assert_eq!(release_map.get("BUILD_ID"), Some(&"rolling"));
     }
 }

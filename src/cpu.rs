@@ -14,14 +14,14 @@ pub struct Cpu {
 /// Parses contents of /proc/cpuinfo into a HashMap.
 /// Content is in the form:
 /// KEY  : VALUE
-fn parse(contents: &str) -> HashMap<String, String> {
+fn parse(contents: &str) -> HashMap<&str, &str> {
     contents
         .lines()
         .map(|line| {
             let split = line.split(':').collect::<Vec<_>>();
             // Safe to unwrap, since data is almost guaranteed to be in a valid format.
-            let key = split.get(0).unwrap().trim().to_string();
-            let val = split.get(1).unwrap_or(&"").trim().to_string();
+            let key = split.get(0).unwrap().trim();
+            let val = split.get(1).unwrap_or(&"").trim();
             (key, val)
         })
         .collect()

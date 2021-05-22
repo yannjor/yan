@@ -59,14 +59,14 @@ fn parse_mem_value(value: &str) -> u32 {
 /// Parses the contents of /proc/meminfo into a HashMap.
 /// Content is in form:
 /// KEY:    VALUE KB
-fn parse(contents: &str) -> HashMap<String, u32> {
+fn parse(contents: &str) -> HashMap<&str, u32> {
     contents
         .lines()
         .map(|line| {
-            let split = line.split(':').collect::<Vec<_>>();
             // Safe to unwrap, since data is almost guaranteed to be in a valid format.
-            let key = split.get(0).unwrap().to_string();
-            let val = parse_mem_value(split.get(1).unwrap());
+            let split = line.split_once(':').unwrap();
+            let key = split.0;
+            let val = parse_mem_value(split.1);
             (key, val)
         })
         .collect()
