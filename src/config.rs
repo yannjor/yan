@@ -15,11 +15,29 @@ pub trait Printable {
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Module {
+    Memory,
+    Shell,
+}
+
+impl Printable for Module {
+    fn print(&self, config: &Config) {
+        match self {
+            Module::Memory => config.memory.print(config),
+            Module::Shell => config.shell.print(config),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
 #[serde(default)]
 pub struct Config {
     /// Accent color in output
     #[serde(skip)]
     pub color: Color,
+
+    pub modules: Vec<Module>,
 
     pub memory: Memory,
 
@@ -32,6 +50,9 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             color: Color::Cyan,
+            modules: vec![
+                Module::Memory,
+            ],
             memory: Memory::default(),
             shell: Shell::default(),
             uptime: Uptime::default(),
