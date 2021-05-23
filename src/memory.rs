@@ -4,7 +4,7 @@ use std::fs::read_to_string;
 use serde::{Deserialize, Serialize};
 
 use crate::config::Config;
-use crate::Module;
+use crate::config::Printable;
 
 const MEM_USAGE_PATH: &str = "/proc/meminfo";
 
@@ -94,7 +94,7 @@ impl Default for Memory {
     }
 }
 
-impl Module for Memory {
+impl Printable for Memory {
     fn print(&self, config: &Config) {
         let used = self.usage.0;
         let total = self.usage.1;

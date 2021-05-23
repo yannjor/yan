@@ -10,6 +10,10 @@ use crate::uptime::Uptime;
 
 const BINARY_NAME: &str = env!("CARGO_PKG_NAME");
 
+pub trait Printable {
+    fn print(&self, config: &Config);
+}
+
 #[derive(Serialize, Deserialize)]
 #[serde(default)]
 pub struct Config {

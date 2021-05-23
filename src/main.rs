@@ -6,10 +6,7 @@ mod shell;
 mod uptime;
 
 use config::Config;
-
-pub trait Module {
-    fn print(&self, config: &Config);
-}
+use config::Printable;
 
 /// Struct to store the detected system information.
 struct SystemInfo {

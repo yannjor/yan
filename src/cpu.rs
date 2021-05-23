@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fs::read_to_string;
 
 use crate::config::Config;
-use crate::Module;
+use crate::config::Printable;
 
 const CPU_INFO_PATH: &str = "/proc/cpuinfo";
 
@@ -48,7 +48,7 @@ impl Default for Cpu {
     }
 }
 
-impl Module for Cpu {
+impl Printable for Cpu {
     fn print(&self, config: &Config) {
         if let Some(m) = &self.model {
             println!("{}: {}", config.color.bold().paint(&self.header), m);

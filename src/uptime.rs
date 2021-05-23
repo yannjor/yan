@@ -3,7 +3,7 @@ use std::fs::read_to_string;
 use serde::{Deserialize, Serialize};
 
 use crate::Config;
-use crate::Module;
+use crate::config::Printable;
 
 /// /proc/uptime contains two values, the first one represents the time the
 /// system has been on (in seconds) and the second value is the sum of how much
@@ -101,7 +101,7 @@ impl Default for Uptime {
     }
 }
 
-impl Module for Uptime {
+impl Printable for Uptime {
     fn print(&self, config: &Config) {
         let uptime = Duration::from_secs(self.uptime).to_string(config.uptime.short_output);
         println!(

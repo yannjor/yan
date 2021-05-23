@@ -4,7 +4,7 @@ use std::env;
 use std::path::Path;
 
 use crate::config::Config;
-use crate::Module;
+use crate::config::Printable;
 
 #[derive(Serialize, Deserialize)]
 #[serde(default)]
@@ -37,7 +37,7 @@ impl Default for Shell {
     }
 }
 
-impl Module for Shell {
+impl Printable for Shell {
     fn print(&self, config: &Config) {
         if let Some(shell) = &self.shell {
             let mut shell = shell.clone();

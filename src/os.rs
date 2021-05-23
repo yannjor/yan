@@ -3,7 +3,7 @@ use std::env::consts;
 use std::fs;
 
 use crate::config::Config;
-use crate::Module;
+use crate::config::Printable;
 
 const OS_RELEASE_PATH: &str = "/etc/os-release";
 const OS_KERNEL_PATH: &str = "/proc/sys/kernel/osrelease";
@@ -54,7 +54,7 @@ impl Default for Distro {
     }
 }
 
-impl Module for Distro {
+impl Printable for Distro {
     fn print(&self, config: &Config) {
         if let Some(n) = &self.name {
             println!("{}: {}", config.color.bold().paint(&self.header), n);
@@ -76,7 +76,7 @@ impl Default for Architechture {
     }
 }
 
-impl Module for Architechture {
+impl Printable for Architechture {
     fn print(&self, config: &Config) {
         println!(
             "{}: {}",
@@ -108,7 +108,7 @@ impl Default for Kernel {
     }
 }
 
-impl Module for Kernel {
+impl Printable for Kernel {
     fn print(&self, config: &Config) {
         if let Some(v) = &self.version {
             println!("{}: {}", config.color.bold().paint(&self.header), v);
