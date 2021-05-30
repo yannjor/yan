@@ -3,6 +3,7 @@ mod cpu;
 mod memory;
 mod os;
 mod shell;
+mod title;
 mod uptime;
 
 use config::Config;
@@ -19,6 +20,7 @@ struct SystemInfo {
 impl SystemInfo {
     fn load() -> Self {
         let modules: Vec<Box<dyn Module>> = vec![
+            Box::new(title::Title::default()),
             Box::new(os::Distro::default()),
             Box::new(os::Architechture::default()),
             Box::new(os::Kernel::default()),
