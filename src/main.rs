@@ -2,6 +2,7 @@ mod config;
 mod cpu;
 mod memory;
 mod os;
+mod packages;
 mod shell;
 mod title;
 mod uptime;
@@ -25,6 +26,7 @@ impl SystemInfo {
             Box::new(os::Architechture::default()),
             Box::new(os::Kernel::default()),
             Box::new(uptime::Uptime::default()),
+            Box::new(packages::Packages::default()),
             Box::new(shell::Shell::default()),
             Box::new(memory::Memory::default()),
             Box::new(cpu::Cpu::default()),
